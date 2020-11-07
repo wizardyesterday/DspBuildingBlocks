@@ -25,7 +25,7 @@ look at my code and say "yeah, this is dead simple".  We'll see how that
 works out.
 
 Now, why would I want to have a phase corrector when I have an NCO?  Well,
-sometimes data is provided in polar format rather than Cartisian format.
+sometimes data is provided in polar format rather than Cartesian format.
 When implementing frequency correction, you can counteract the phase rotation
 (from sample to sample) by merely subtracting the current phase of a phase
 accumulator.  The only function that the phase corrector is to provide the
