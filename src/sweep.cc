@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "Nco.h"
 
@@ -41,6 +42,9 @@ int main(int argc,char **argv)
   // Set system sample rate.
   sampleRate = 24000;
 
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+  // Default parameters.
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default to 200Hz.
   startFrequency = 100;
 
@@ -50,25 +54,37 @@ int main(int argc,char **argv)
   // Default for a 1 second sweep.
   duration = 1;
 
-//  if (argc == 2)
-//  {
-//    frequency = atof(argv[1]);
-//  } // if
+  // Let's discretize the sweep.
+  frequencyStep = 10;
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+
+  if (argc == 5)
+  {
+    // Retrieve command line arguments.
+    startFrequency  = atof(argv[1]);
+    endFrequency  = atof(argv[2]);
+    frequencyStep = atof(argv[3]);
+    duration = atof(argv[4]);
+  } // if
 
   // We derive this.
   numberOfSamples = (int)(sampleRate * duration);
 
-  // Let's discretize the sweep.
-  frequencyStep = 10;
+  if (endFrequency < startFrequency)
+  {
+    // Reverse the direction of the sweep.
+    frequencyStep = -frequencyStep;
+  } // if
 
   // Number of dwells is a dependent variable.
-  numberOfDwells = (int)((endFrequency - startFrequency) / frequencyStep);
+  numberOfDwells = 
+    (int)(fabs(endFrequency - startFrequency) / fabs(frequencyStep));
 
   // This is derived.
   samplesPerDwell = numberOfSamples / numberOfDwells;
 
   // Create an NCO with the appropriate sample rate and frequency.
-  myNcoPtr = new Nco(sampleRate,200);
+  myNcoPtr = new Nco(sampleRate,startFrequency);
 
   // Initial value of the frequency.
   currentFrequency = startFrequency;
