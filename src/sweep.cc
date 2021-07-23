@@ -1,22 +1,20 @@
 //*************************************************************************
-// File name: testNco.cc
+// File name: sweep.cc
 //*************************************************************************
 
 //*************************************************************************
-// This program tests both the numerically controlled oscillator (NCO).
-// The NCO data is written to an output file with the format described
-// below.  Note that only the in-phase component of the NCO output is
-// used, therefore the output file represents a cosine waveform.
+// This program generates an audio frequency sweep as specified by the
+// as specified by the user.  The output is sent to stdout, and the
+// waveform is a cosine wave represented as 16-bit little endian PCM
+// samples such that -32768 < sampleValue <= 32767.
 //
 // To run this program type,
 // 
-//     ./sweep > {startFrequency] {endFrequency} {frequencyStep}
-//               {duration} > ncoFileName
+//     ./sweep > startFrequency endFrequency frequencyStep
+//               duration > ncoFileName
 //
 // where, frequency is the frequency in Hz (either positive or negative),
 // and ncoFileName is a sample file represented as S0, S1,...
-//
-// If frequency is not specified, a frequency of 200Hz is used.
 //*************************************************************************
 
 #include <stdio.h>
@@ -39,7 +37,7 @@ int main(int argc,char **argv)
   int numberOfSamples, samplesPerDwell, numberOfDwells;
   Nco *myNcoPtr;
 
-  // Set system sample rate.
+  // Set system sample rate in S/s.
   sampleRate = 24000;
 
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
