@@ -10,7 +10,8 @@
 //
 // To run this program type,
 // 
-//     ./sweep > {startFrequency] {endFrequency} {duration} > ncoFileName
+//     ./sweep > {startFrequency] {endFrequency} {frequencyStep}
+//               {duration} > ncoFileName
 //
 // where, frequency is the frequency in Hz (either positive or negative),
 // and ncoFileName is a sample file represented as S0, S1,...
@@ -41,13 +42,13 @@ int main(int argc,char **argv)
   sampleRate = 24000;
 
   // Default to 200Hz.
-  startFrequency = 1000;
+  startFrequency = 100;
 
   // Default to 500Hz.
-  endFrequency = 2000;
+  endFrequency = 600;
 
   // Default for a 1 second sweep.
-  duration = 5;
+  duration = 1;
 
 //  if (argc == 2)
 //  {
@@ -57,14 +58,14 @@ int main(int argc,char **argv)
   // We derive this.
   numberOfSamples = (int)(sampleRate * duration);
 
-  // We use this for the inner loop.
-  samplesPerDwell = 30;
-
-  // This seems too complicated.
-  numberOfDwells = numberOfSamples / samplesPerDwell;
-
   // Let's discretize the sweep.
-  frequencyStep = (endFrequency - startFrequency) / numberOfDwells;
+  frequencyStep = 10;
+
+  // Number of dwells is a dependent variable.
+  numberOfDwells = (int)((endFrequency - startFrequency) / frequencyStep);
+
+  // This is derived.
+  samplesPerDwell = numberOfSamples / numberOfDwells;
 
   // Create an NCO with the appropriate sample rate and frequency.
   myNcoPtr = new Nco(sampleRate,200);
@@ -72,6 +73,10 @@ int main(int argc,char **argv)
   // Initial value of the frequency.
   currentFrequency = startFrequency;
 
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+  // The outer loop is responsible for stepping
+  // through all of the frequencies of the sweep.
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   for (i = 0; i < numberOfDwells; i++)
   {
     // Update the frequency.
@@ -80,6 +85,10 @@ int main(int argc,char **argv)
     // Update to the next increment.
     currentFrequency += frequencyStep;
 
+    //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+    // The inner loop generates all of the samples
+    // at the current frequency.
+    //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
     for (j = 0; j < samplesPerDwell; j++)
     {
       // Get the next sample pair.
