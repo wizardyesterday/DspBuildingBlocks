@@ -11,10 +11,15 @@
 // To run this program type,
 // 
 //     ./sweep > startFrequency endFrequency frequencyStep
-//               duration > ncoFileName
+//               duration sampleRate > ncoFileName
 //
-// where, frequency is the frequency in Hz (either positive or negative),
-// and ncoFileName is a sample file represented as S0, S1,...
+// where,
+//
+//    startFrequency - The start frequency in Hz.
+//    endFrequency - The end frequency in Hz.
+//    frequencyStep - The frequency increment in Hz.
+//    duration - The duration in seconds.
+//    sampleRate - The sample rate in samples/second.
 //*************************************************************************
 
 #include <stdio.h>
@@ -56,13 +61,14 @@ int main(int argc,char **argv)
   frequencyStep = 10;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
-  if (argc == 5)
+  if (argc == 6)
   {
     // Retrieve command line arguments.
     startFrequency  = atof(argv[1]);
     endFrequency  = atof(argv[2]);
     frequencyStep = atof(argv[3]);
-    duration = atof(argv[4]);
+    sampleRate = atof(argv[4]);
+    duration = atof(argv[5]);
   } // if
 
   // We derive this.
