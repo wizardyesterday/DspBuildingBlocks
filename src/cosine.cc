@@ -10,13 +10,13 @@
 //
 // To run this program type,
 // 
-//     ./cosine > {frequency] > ncoFileName
+//     ./cosine > frequency sampleRate duration > ncoFileName
 //
-// where, frequency is the frequency in Hz (either positive or negative),
-// and ncoFileName is a sample file represented as S0, S1,...
-//
-// If frequency is not specified, a frequency of 200Hz is used.
-//*************************************************************************
+//    frequency - frequency in Hz.
+//    frequencyStep - The frequency increment in Hz.
+//    sampleRate - The sample rate in samples/second.
+//    duration - The duration in seconds.
+///*************************************************************************
 
 #include <stdio.h>
 #include <stdint.h>
@@ -30,20 +30,39 @@ int main(int argc,char **argv)
   float iValue, qValue;
   int16_t cosineValue;
   float frequency;
+  float sampleRate;
+  float duration;
+  int numberOfSamples;
   Nco *myNcoPtr;
 
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+  // Default parameters.
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default to 200Hz.
   frequency = 200;
 
-  if (argc == 2)
+  // Default to 24000 S/s.
+  sampleRate = 24000;
+
+  // Default for a 1 second signal.
+  duration = 1;
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+
+  if (argc == 4)
   {
-    frequency = atof(argv[1]);
+    // Retrieve command line arguments.
+    frequency  = atof(argv[1]);
+    sampleRate = atof(argv[2]);
+    duration = atof(argv[3]);
   } // if
 
-  // Create an NCO with a sample rate of 24000S/s and the appropriate frequency.
-  myNcoPtr = new Nco(24000,frequency);
+  // We derive this.
+  numberOfSamples = (int)(sampleRate * duration);
 
-  for (i = 0; i < 32768; i++)
+  // Create an NCO with a sample rate of 24000S/s and the appropriate frequency.
+  myNcoPtr = new Nco(sampleRate,frequency);
+
+  for (i = 0; i < numberOfSamples; i++)
   {
     // Get the next sample pair.
     myNcoPtr->run(&iValue,&qValue);

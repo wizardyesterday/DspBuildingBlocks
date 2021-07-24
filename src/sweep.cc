@@ -11,15 +11,15 @@
 // To run this program type,
 // 
 //     ./sweep > startFrequency endFrequency frequencyStep
-//               duration sampleRate > ncoFileName
+//               sampleRate duration > ncoFileName
 //
 // where,
 //
 //    startFrequency - The start frequency in Hz.
 //    endFrequency - The end frequency in Hz.
 //    frequencyStep - The frequency increment in Hz.
-//    duration - The duration in seconds.
 //    sampleRate - The sample rate in samples/second.
+//    duration - The duration in seconds.
 //*************************************************************************
 
 #include <stdio.h>
@@ -42,22 +42,22 @@ int main(int argc,char **argv)
   int numberOfSamples, samplesPerDwell, numberOfDwells;
   Nco *myNcoPtr;
 
-  // Set system sample rate in S/s.
-  sampleRate = 24000;
-
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default parameters.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default to 200Hz.
   startFrequency = 100;
 
-  // Default to 500Hz.
+  // Default to 600Hz.
   endFrequency = 600;
+
+  // Default to 24000 S/s.
+  sampleRate = 24000;
 
   // Default for a 1 second sweep.
   duration = 1;
 
-  // Let's discretize the sweep.
+  // Default to a 10 Hz frequency step.
   frequencyStep = 10;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
