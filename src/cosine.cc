@@ -10,7 +10,9 @@
 //
 // To run this program type,
 // 
-//     ./cosine > frequency sampleRate duration > ncoFileName
+//     ./cosine > frequency sampleRate duration > ncoFileName,
+//
+// where,
 //
 //    frequency - frequency in Hz.
 //    frequencyStep - The frequency increment in Hz.
