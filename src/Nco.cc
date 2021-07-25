@@ -91,7 +91,7 @@ Nco::~Nco(void)
 
   Inputs:
 
-    frequency - The operating frequency in Hz..
+    frequency - The operating frequency in Hz.
 
   Outputs:
 

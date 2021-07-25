@@ -30,38 +30,63 @@
 
 #include "Nco.h"
 
-int main(int argc,char **argv)
+// This structure is used to consolidate user parameters.
+struct MyParameters
 {
-  int i, j;
-  int opt;
+  float *startFrequencyPtr;
+  float *endFrequencyPtr;
+  float *frequencyStepPtr;
+  float *sampleRatePtr;
+  float *durationPtr;
+};
+
+/*****************************************************************************
+
+  Name: getUserArguments
+
+  Purpose: The purpose of this function is to retrieve the user arguments
+  that were passed to the program.  Any arguments that are specified are
+  set to reasonable default values.
+
+  Calling Sequence: exitProgram = getUserArguments(parameters)
+
+  Inputs:
+
+    parameters - A structure that contains pointers to the user parameters.
+
+  Outputs:
+
+    exitProgram - A flag that indicates whether or not the program should
+    be exited.  A value of true indicates to exit the program, and a value
+    of false indicates that the program should not be exited..
+
+*****************************************************************************/
+bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
+{
+  bool exitProgram;
   bool done;
-  float iValue, qValue;
-  int16_t cosineValue;
-  float sampleRate;
-  float startFrequency, endFrequency;
-  float currentFrequency;
-  float duration;
-  float frequencyStep;
-  int numberOfSamples, samplesPerDwell, numberOfDwells;
-  Nco *myNcoPtr;
+  int opt;
+
+  // Default not to exit program.
+  exitProgram = false;
 
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default parameters.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default to 200Hz.
-  startFrequency = 100;
+  *parameters.startFrequencyPtr = 100;
 
   // Default to 600Hz.
-  endFrequency = 600;
-
-  // Default to 24000 S/s.
-  sampleRate = 24000;
-
-  // Default for a 1 second sweep.
-  duration = 1;
+  *parameters.endFrequencyPtr = 600;
 
   // Default to a 10 Hz frequency step.
-  frequencyStep = 10;
+  *parameters.frequencyStepPtr = 10;
+
+  // Default to 24000 S/s.
+  *parameters.sampleRatePtr = 24000;
+
+  // Default for a 1 second sweep.
+  *parameters.durationPtr = 1;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Set up for loop entry.
@@ -79,31 +104,31 @@ int main(int argc,char **argv)
     {
       case 'S':
       {
-        startFrequency  = atof(optarg);
+        *parameters.startFrequencyPtr = atof(optarg);
         break;
       } // case
 
       case 'E':
       {
-        endFrequency  = atof(optarg);
+        *parameters.endFrequencyPtr = atof(optarg);
         break;
       } // case
 
       case 's':
       {
-        frequencyStep  = atof(optarg);
+        *parameters.frequencyStepPtr = atof(optarg);
         break;
       } // case
 
       case 'r':
       {
-        sampleRate  = atof(optarg);
+        *parameters.sampleRatePtr = atof(optarg);
         break;
       } // case
 
       case 'd':
       {
-        duration  = atof(optarg);
+        *parameters.durationPtr = atof(optarg);
         break;
       } // case
 
@@ -114,9 +139,8 @@ int main(int argc,char **argv)
         fprintf(stderr,"        -s frequencyStep -r sampleRate\n");
         fprintf(stderr,"        -d duration\n");
 
-        // Okay this is unstructured.
-        return (0);
-
+        // Indicate that program must be exited.
+        exitProgram = true;
         break;
       } // case
 
@@ -129,7 +153,44 @@ int main(int argc,char **argv)
     } // switch
 
   } // while
-  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+
+  return (exitProgram);
+
+} // getUserArguments
+
+//*************************************************************************
+// Mainline code.
+//*************************************************************************
+int main(int argc,char **argv)
+{
+  int i, j;
+  bool exitProgram;
+  float iValue, qValue;
+  int16_t cosineValue;
+  float sampleRate;
+  float startFrequency, endFrequency;
+  float currentFrequency;
+  float duration;
+  float frequencyStep;
+  int numberOfSamples, samplesPerDwell, numberOfDwells;
+  Nco *myNcoPtr;
+  struct MyParameters parameters;
+
+  // Set up for parameter transmission.
+  parameters.startFrequencyPtr = &startFrequency;
+  parameters.endFrequencyPtr = &endFrequency;
+  parameters.frequencyStepPtr = &frequencyStep;
+  parameters.sampleRatePtr = &sampleRate;
+  parameters.durationPtr = &duration;
+
+  // Retrieve the system parameters.
+  exitProgram = getUserArguments(argc,argv,parameters);
+
+  if (exitProgram)
+  {
+    // Bail out.
+    return (0);
+  } // if
 
   // We derive this.
   numberOfSamples = (int)(sampleRate * duration);

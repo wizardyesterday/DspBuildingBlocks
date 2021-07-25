@@ -26,30 +26,55 @@
 
 #include "Nco.h"
 
-int main(int argc,char **argv)
+// This structure is used to consolidate user parameters.
+struct MyParameters
 {
-  int i;
-  int opt;
+  float *frequencyPtr;
+  float *sampleRatePtr;
+  float *durationPtr;
+};
+
+/*****************************************************************************
+
+  Name: getUserArguments
+
+  Purpose: The purpose of this function is to retrieve the user arguments
+  that were passed to the program.  Any arguments that are specified are
+  set to reasonable default values.
+
+  Calling Sequence: exitProgram = getUserArguments(parameters)
+
+  Inputs:
+
+    parameters - A structure that contains pointers to the user parameters.
+
+  Outputs:
+
+    exitProgram - A flag that indicates whether or not the program should
+    be exited.  A value of true indicates to exit the program, and a value
+    of false indicates that the program should not be exited..
+
+*****************************************************************************/
+bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
+{
+  bool exitProgram;
   bool done;
-  float iValue, qValue;
-  int16_t cosineValue;
-  float frequency;
-  float sampleRate;
-  float duration;
-  int numberOfSamples;
-  Nco *myNcoPtr;
+  int opt;
+
+  // Default not to exit program.
+  exitProgram = false;
 
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default parameters.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default to 200Hz.
-  frequency = 200;
+  *parameters.frequencyPtr = 200;
 
   // Default to 24000 S/s.
-  sampleRate = 24000;
+  *parameters.sampleRatePtr = 24000;
 
   // Default for a 1 second signal.
-  duration = 1;
+  *parameters.durationPtr = 1;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Set up for loop entry.
@@ -67,31 +92,29 @@ int main(int argc,char **argv)
     {
       case 'f':
       {
-        frequency  = atof(optarg);
+        *parameters.frequencyPtr = atof(optarg);
         break;
       } // case
 
       case 'r':
       {
-        sampleRate  = atof(optarg);
+        *parameters.sampleRatePtr = atof(optarg);
         break;
       } // case
 
       case 'd':
       {
-        duration  = atof(optarg);
+        *parameters.durationPtr = atof(optarg);
         break;
       } // case
 
       case 'h':
       {
         // Display usage.
-        fprintf(stderr,"./cosine -f startFrequency -r sampleRate");
-        fprintf(stderr," -d duration\n");
+        fprintf(stderr,"./cosine -f frequency -r sampleRate -d duration\n");
 
-        // Okay this is unstructured.
-        return (0);
-
+        // Indicate that program must be exited.
+        exitProgram = true;
         break;
       } // case
 
@@ -99,17 +122,50 @@ int main(int argc,char **argv)
       {
         // All options consumed, so bail out.
         done = true;
-        break;
       } // case
     } // switch
 
   } // while
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
+  return (exitProgram);
+
+} // getUserArguments
+
+//*************************************************************************
+// Mainline code.
+//*************************************************************************
+int main(int argc,char **argv)
+{
+  int i;
+  bool exitProgram;
+  float iValue, qValue;
+  int16_t cosineValue;
+  float frequency;
+  float sampleRate;
+  float duration;
+  int numberOfSamples;
+  Nco *myNcoPtr;
+  struct MyParameters parameters;
+
+  // Set up for parameter transmission.
+  parameters.frequencyPtr = &frequency;
+  parameters.sampleRatePtr = &sampleRate;
+  parameters.durationPtr = &duration;
+
+  // Retrieve the system parameters.
+  exitProgram = getUserArguments(argc,argv,parameters);
+
+  if (exitProgram)
+  {
+    // Bail out.
+    return (0);
+  } // if
+
   // We derive this.
   numberOfSamples = (int)(sampleRate * duration);
 
-  // Create an NCO with a sample rate of 24000S/s and the appropriate frequency.
+  // Instantiate an NCO.
   myNcoPtr = new Nco(sampleRate,frequency);
 
   for (i = 0; i < numberOfSamples; i++)
