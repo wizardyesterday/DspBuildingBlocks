@@ -10,8 +10,8 @@
 //
 // To run this program type,
 // 
-//     ./sweep > startFrequency endFrequency frequencyStep
-//               sampleRate duration > ncoFileName
+//     ./sweep  -S startFrequency -E endFrequency -s frequencyStep
+//              -r sampleRate -d duration
 //
 // where,
 //
@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <math.h>
 
 #include "Nco.h"
@@ -32,6 +33,8 @@
 int main(int argc,char **argv)
 {
   int i, j;
+  int opt;
+  bool done;
   float iValue, qValue;
   int16_t cosineValue;
   float sampleRate;
@@ -61,15 +64,72 @@ int main(int argc,char **argv)
   frequencyStep = 10;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
-  if (argc == 6)
+  // Set up for loop entry.
+  done = false;
+
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+  // Retrieve the command line arguments.
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+  while (!done)
   {
-    // Retrieve command line arguments.
-    startFrequency  = atof(argv[1]);
-    endFrequency  = atof(argv[2]);
-    frequencyStep = atof(argv[3]);
-    sampleRate = atof(argv[4]);
-    duration = atof(argv[5]);
-  } // if
+    // Retrieve the next option.
+    opt = getopt(argc,argv,"S:E:s:r:d:h");
+
+    switch (opt)
+    {
+      case 'S':
+      {
+        startFrequency  = atof(optarg);
+        break;
+      } // case
+
+      case 'E':
+      {
+        endFrequency  = atof(optarg);
+        break;
+      } // case
+
+      case 's':
+      {
+        frequencyStep  = atof(optarg);
+        break;
+      } // case
+
+      case 'r':
+      {
+        sampleRate  = atof(optarg);
+        break;
+      } // case
+
+      case 'd':
+      {
+        duration  = atof(optarg);
+        break;
+      } // case
+
+      case 'h':
+      {
+        // Display usage.
+        fprintf(stderr,"./sweep -S startFrequency -E endFrequency\n");
+        fprintf(stderr,"        -s frequencyStep -r sampleRate\n");
+        fprintf(stderr,"        -d duration\n");
+
+        // Okay this is unstructured.
+        return (0);
+
+        break;
+      } // case
+
+      case -1:
+      {
+        // All options consumed, so bail out.
+        done = true;
+        break;
+      } // case
+    } // switch
+
+  } // while
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // We derive this.
   numberOfSamples = (int)(sampleRate * duration);

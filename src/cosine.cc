@@ -10,12 +10,11 @@
 //
 // To run this program type,
 // 
-//     ./cosine > frequency sampleRate duration > ncoFileName,
+//     ./cosine > -f frequency -r sampleRate -d duration > ncoFileName,
 //
 // where,
 //
 //    frequency - frequency in Hz.
-//    frequencyStep - The frequency increment in Hz.
 //    sampleRate - The sample rate in samples/second.
 //    duration - The duration in seconds.
 ///*************************************************************************
@@ -23,12 +22,15 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "Nco.h"
 
 int main(int argc,char **argv)
 {
   int i;
+  int opt;
+  bool done;
   float iValue, qValue;
   int16_t cosineValue;
   float frequency;
@@ -50,13 +52,59 @@ int main(int argc,char **argv)
   duration = 1;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
-  if (argc == 4)
+  // Set up for loop entry.
+  done = false;
+
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+  // Retrieve the command line arguments.
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+  while (!done)
   {
-    // Retrieve command line arguments.
-    frequency  = atof(argv[1]);
-    sampleRate = atof(argv[2]);
-    duration = atof(argv[3]);
-  } // if
+    // Retrieve the next option.
+    opt = getopt(argc,argv,"f:r:d:h");
+
+    switch (opt)
+    {
+      case 'f':
+      {
+        frequency  = atof(optarg);
+        break;
+      } // case
+
+      case 'r':
+      {
+        sampleRate  = atof(optarg);
+        break;
+      } // case
+
+      case 'd':
+      {
+        duration  = atof(optarg);
+        break;
+      } // case
+
+      case 'h':
+      {
+        // Display usage.
+        fprintf(stderr,"./cosine -f startFrequency -r sampleRate");
+        fprintf(stderr," -d duration\n");
+
+        // Okay this is unstructured.
+        return (0);
+
+        break;
+      } // case
+
+      case -1:
+      {
+        // All options consumed, so bail out.
+        done = true;
+        break;
+      } // case
+    } // switch
+
+  } // while
+  //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // We derive this.
   numberOfSamples = (int)(sampleRate * duration);
