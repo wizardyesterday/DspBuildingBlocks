@@ -208,8 +208,8 @@ int main(int argc,char **argv)
   // This is derived.
   samplesPerDwell = numberOfSamples / numberOfDwells;
 
-  // Create an NCO with the appropriate sample rate and frequency.
-  myNcoPtr = new Nco(sampleRate,startFrequency);
+  // Instantiate an NCO.
+  myNcoPtr = new Nco(sampleRate,frequency);
 
   // Initial value of the frequency.
   currentFrequency = startFrequency;
