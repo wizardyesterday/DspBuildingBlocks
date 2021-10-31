@@ -209,7 +209,7 @@ int main(int argc,char **argv)
   samplesPerDwell = numberOfSamples / numberOfDwells;
 
   // Instantiate an NCO.
-  myNcoPtr = new Nco(sampleRate,frequency);
+  myNcoPtr = new Nco(sampleRate,0);
 
   // Initial value of the frequency.
   currentFrequency = startFrequency;
