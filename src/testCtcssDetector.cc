@@ -7,7 +7,7 @@
 //  g++ -o testCtcssDetector tesCtcssDetector.cc Decimator_int16.cc -lm
 //
 // To run, type,
-// ./testCtcssDetector -s <samplerate> -t <detectionthreshold>
+// ./testCtcssDetector -s <samplerate> -t <detectionthreshold> > /dev/null
 //
 // where,
 //
@@ -18,7 +18,9 @@
 //    threshold of the CTCSS detector.
 //
 // Note that all flags are options.  If any flag is omitted, a
-// reasonable default value will be used.
+// reasonable default value will be used.  Also, keep in mind that
+// the PCM data is written to stdout so t at you can pipe the output
+// to something like aplay.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
 #include <stdio.h>
@@ -218,6 +220,10 @@ int main(int argc,char **argv)
     } // if
     else
     {
+      // Echo to stdout for any further processing that is desired.
+      fwrite(pcmBuffer,sizeof(int16_t),count,stdout);
+
+      // Attempt to detect a CTCSS tone.
       myCtcssPtr->detectTone(pcmBuffer,
                              count,
                              &ctcssFrequency,
