@@ -11,6 +11,10 @@
 
 using namespace std;
 
+#define DFT_SCALE_FACTOR (1.0f / 32767.0f)
+#define DEFAULT_DETECTOR_THRESHOLD (1000);
+#define REQUIRED_NUMBER_OF_SAMPLES (8000)
+
 static int16_t ctcssFrequencies[] =
 {
   670,
@@ -229,9 +233,11 @@ CtcssDetector::CtcssDetector(float sampleRate)
                                          lowpassFilterCoefficients,
                                          2);
 
+  // This compensates for the "gain" that a DFT provides.
+  dftScaleFactor = DFT_SCALE_FACTOR;
+
   // Set to  nominal values.
-  detectorGain = 1.0f / 32767.0f;
-  detectorThreshold = 1000;
+  detectorThreshold = DEFAULT_DETECTOR_THRESHOLD;
 
   // Reference the beginning of the buffer.
   bufferedDataIndex = 0;
@@ -303,44 +309,16 @@ void CtcssDetector::reset(void)
 
 /*****************************************************************************
 
-  Name: setDetectorGain
-
-  Purpose: The purpose of this function is to set the gain of the
-  tone detector.  This provides flexibility due to the fact that the
-  range of data values may vary across applications.
-
-  Calling Sequence: setDetectorGain(gain)
-
-  Inputs:
-
-    gain - The detector gain.
-
-  Outputs:
-
-    None.
-
-*****************************************************************************/
-void CtcssDetector::setDetectorGain(float gain)
-{
-
-  this->detectorGain = gain;
-
-  return;
-
-} // setDetectorGain
-
-/*****************************************************************************
-
   Name: setDetectorThreshold
 
   Purpose: The purpose of this function is to set the threshold of the
   tone detector.  
 
-  Calling Sequence: setDetectorThreshold(gain)
+  Calling Sequence: setDetectorThreshold(threshold)
 
   Inputs:
 
-    gain - The detector threshold.
+    threshold - The detector threshold.
 
   Outputs:
 
@@ -358,60 +336,60 @@ void CtcssDetector::setDetectorThreshold(float threshold)
 
 /*****************************************************************************
 
-  Name: processData
+  Name: detectTone
 
   Purpose: The purpose of this function is to perform all of the necessary
   processing of an audio signal.  The goal is to bandlimit the
   signal to minimize noise and speech information, and identify the CTCSS
   tone that was used for the transmission.
 
-  Calling Sequence: result = processData(demodulatedDataPtr,
-                                         numberOfSamples,
-                                         frequencyPtr,
-                                         dataAvailablePtr)
+  Calling Sequence: result = detectTone(pcmDataPtr,
+                                        numberOfSamples,
+                                        frequencyPtr,
+                                        toneDetectedPtr)
 
   Inputs:
 
-    demodulatedDataPtr - A pointer to the demodulated data in the form of
-    16-bit, signed, little endian PCM samples..
+    pcmDataPtr - A pointer to data in the form of 16-bit, signed,
+    little endian PCM samples..
 
     numberOfSamples - The number of samples contained in the input buffer.
 
     frequencyPtr - A pointer to storage for the returned frequency with a
     resolution of 0.1Hz.
 
-    dataAvailablePtr - A pointer to a flag that indicates that data is
-    available.  A value of true indicates that a result is available,
-    and a value of false indicates that a result is not available.
+    *toneDetectedPtr - A pointer to a flag that indicates that a tone
+    was detected.  A value of true indicates that a tone was detected,
+    and a value of false indicates that a tone was not detected.
 
   Outputs:
 
     None.
 
 *****************************************************************************/
-void CtcssDetector::processData(int16_t *demodulatedDataPtr,
-                                uint32_t numberOfSamples,
-                                int16_t *frequencyPtr,
-                                bool *dataAvailablePtr)
+void CtcssDetector::detectTone(int16_t *pcmDataPtr,
+                               uint32_t numberOfSamples,
+                               int16_t *frequencyPtr,
+                               bool *toneDetectedPtr)
 {
   uint32_t numberOfDecimatedSamples;
   uint32_t length;
 
   // Default to false since processing is conditional.
-  *dataAvailablePtr = false;
+  *toneDetectedPtr = false;
 
-  if (bufferedDataIndex < 8000)
+  if (bufferedDataIndex < REQUIRED_NUMBER_OF_SAMPLES)
   {
     // Concatenate the data to the buffer.
     memcpy(&bufferedData[bufferedDataIndex],
-           demodulatedDataPtr,
+           pcmDataPtr,
            (numberOfSamples * 2));
 
     // Update the index to account for the new samples.
     bufferedDataIndex = bufferedDataIndex + numberOfSamples;
   } // if
 
-  if (bufferedDataIndex >= 8000)
+  if (bufferedDataIndex >= REQUIRED_NUMBER_OF_SAMPLES)
   {
     // Apply the lowpass filter to the demodulated data.
     numberOfDecimatedSamples =
@@ -423,13 +401,16 @@ void CtcssDetector::processData(int16_t *demodulatedDataPtr,
     // Reference the beginning of the buffer.
     bufferedDataIndex = 0;
 
-    // Indicate that valid data is available.
-    *dataAvailablePtr = true;
+    if (*frequencyPtr != -1)
+    {
+      // Indicate that a CTCSS frequency was found.
+      *toneDetectedPtr = true;
+    } // if
   } // if
 
   return;
 
-} // processData
+} // detectTone
 
 /*****************************************************************************
 
@@ -602,7 +583,7 @@ float CtcssDetector::goertzelSquared(float toneFrequency,
   for (n = 0; n < bufferLength; n++)
   {
     // Compute filtered value using scalled PCM data.
-    w0 = (a1 * w1) - w2 + (float)bufferPtr[n] * detectorGain;
+    w0 = (a1 * w1) - w2 + (float)bufferPtr[n] * dftScaleFactor;
 
     // Update the pipeline.
     w2 = w1;
@@ -685,7 +666,7 @@ void CtcssDetector::displayInternalInformation(void)
   fprintf(stderr,"CTCSS Detector Internal Information\n");
   fprintf(stderr,"--------------------------------------------\n");
 
-  fprintf(stderr,"Detector Gain            : %f\n",detectorGain);
+  fprintf(stderr,"Detector Sample Rate     : %f\n",(sampleRate * 2));
   fprintf(stderr,"Detector Threshold       : %f\n",detectorThreshold);
 
   return;

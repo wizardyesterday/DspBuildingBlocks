@@ -7,7 +7,7 @@
 //  g++ -o testCtcssDetector tesCtcssDetector.cc Decimator_int16.cc -lm
 //
 // To run, type,
-// ./testCtcssDetector -s <samplerate> -t <detectionthreshold> -g <gain>
+// ./testCtcssDetector -s <samplerate> -t <detectionthreshold>
 //
 // where,
 //
@@ -16,9 +16,6 @@
 //
 // -t (threshold):
 //    threshold of the CTCSS detector.
-//
-// -g (gain):
-//    gain of the CTCSS detector.
 //
 // Note that all flags are options.  If any flag is omitted, a
 // reasonable default value will be used.
@@ -42,7 +39,6 @@ struct MyParameters
 {
   float *sampleRatePtr;
   float *thresholdPtr;
-  float *gainPtr;
 };
 //************************************************************
 
@@ -51,11 +47,10 @@ struct MyParameters
 //************************************************************
 CtcssDetector *myCtcssPtr;
 
-bool ctcssDataAvailable;
+bool ctcssToneDetected;
 int16_t ctcssFrequency;
 float sampleRate;
 float threshold;
-float gain;
 
 int16_t pcmBuffer[32768];
 //************************************************************
@@ -99,9 +94,6 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
 
   // Default to a reasonable threshold.
   *parameters.thresholdPtr = 1000;
-
-  // Scale to compensate for the gain of a DFT.
-  *parameters.gainPtr = 1.0f / 32768.0f;
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Set up for loop entry.
@@ -141,24 +133,11 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
         break;
       } // case
 
-      case 'g':
-      {
-        // Retrieve for error processing.
-        temporaryValue = atof(optarg);
-
-        if (temporaryValue >= 0)
-        {
-          *parameters.gainPtr = temporaryValue;
-        } // if
-        break;
-      } // case
-
       case 'h':
       {
         // Display usage.
-        fprintf(stderr,"./testCtcssDetector -s samplerate -t threshold"
-                       " -g gain\n");
-
+        fprintf(stderr,"./testCtcssDetector -s samplerate -t threshold\n");
+ 
         // Indicate that program must be exited.
         exitProgram = true;
         break;
@@ -190,17 +169,12 @@ int main(int argc,char **argv)
   uint32_t count;
   struct MyParameters parameters;
 
-  // Initially clear.
-  ctcssDataAvailable = false;
-  ctcssFrequency = -1;
-
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Retrieve command line arguments.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Set up for parameter transmission.
   parameters.sampleRatePtr = &sampleRate;
   parameters.thresholdPtr = &threshold;
-  parameters.gainPtr = &gain;
 
   // Retrieve the system parameters.
   exitProgram = getUserArguments(argc,argv,parameters);
@@ -218,14 +192,10 @@ int main(int argc,char **argv)
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   fprintf(stderr,"Sample Rate: %f\n",sampleRate);
   fprintf(stderr,"Detection Threshold: %f\n",threshold);
-  fprintf(stderr,"Detector Gain: %f\n",gain);
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
   // Instantiate a CTCSS detector with a sample rate of 8000S/s.
   myCtcssPtr = new CtcssDetector(sampleRate);
-
-  // Set the necessary gain.
-  myCtcssPtr->setDetectorGain(gain);
 
   // Try this threshold.
   myCtcssPtr->setDetectorThreshold(threshold);
@@ -239,7 +209,7 @@ int main(int argc,char **argv)
   while (!done)
   {
     // Read a block of input samples.
-    count = fread(pcmBuffer,2,4000,stdin);
+    count = fread(pcmBuffer,sizeof(int16_t),4000,stdin);
 
     if (count == 0)
     {
@@ -248,12 +218,12 @@ int main(int argc,char **argv)
     } // if
     else
     {
-      myCtcssPtr->processData(pcmBuffer,
-                              count,
-                              &ctcssFrequency,
-                              &ctcssDataAvailable);
+      myCtcssPtr->detectTone(pcmBuffer,
+                             count,
+                             &ctcssFrequency,
+                             &ctcssToneDetected);
 
-      if (ctcssDataAvailable)
+      if (ctcssToneDetected)
       {
         fprintf(stderr,"Ctcss Frequency: %d\n",ctcssFrequency);
       } // if

@@ -24,13 +24,12 @@ class CtcssDetector
   ~CtcssDetector(void);
 
   void reset(void);
-  void setDetectorGain(float gain);
   void setDetectorThreshold(float threshold);
 
-  void processData(int16_t *demodulatedDataPtr,
-                   uint32_t numberOfSamples,
-                   int16_t *frequencyPtr,
-                   bool *dataAvailablePtr);
+  void detectTone(int16_t *pcmDataPtr,
+                  uint32_t numberOfSamples,
+                  int16_t *frequencyPtr,
+                  bool *toneDetectedPtr);
 
   void displayInternalInformation(void);
 
@@ -58,8 +57,8 @@ class CtcssDetector
   // This is the sample rate in samples/second.
   float sampleRate;
 
-  // This gain scales the data to a value appropriate for processing.
-  float detectorGain;
+  // This scales the data to a value appropriate for processing.
+  float dftScaleFactor;
 
   // This threshold is used to determine the presense of a signal.
   float detectorThreshold;
