@@ -11,7 +11,7 @@
 //
 // where,
 //
-// -s (samplerate):
+// -r (samplerate):
 //    sample rate of the audio signal in S/s.
 //
 // -t (threshold):
@@ -107,11 +107,11 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   while (!done)
   {
     // Retrieve the next option.
-    opt = getopt(argc,argv,"s:t:g:h");
+    opt = getopt(argc,argv,"r:t:g:h");
 
     switch (opt)
     {
-      case 's':
+      case 'r':
       {
         // Retrieve for error checking.
         temporaryValue = atof(optarg);
@@ -138,7 +138,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
       case 'h':
       {
         // Display usage.
-        fprintf(stderr,"./testCtcssDetector -s samplerate -t threshold\n");
+        fprintf(stderr,"./testCtcssDetector -r samplerate -t threshold\n");
  
         // Indicate that program must be exited.
         exitProgram = true;
