@@ -10,10 +10,12 @@
 //
 // To run this program type,
 // 
-//     ./cosine > -f frequency -r sampleRate -d duration > ncoFileName,
+//     ./cosine > -a amplitude -f frequency -r sampleRate
+//                -d duration > ncoFileName,
 //
 // where,
 //
+//    amplitude - The ampoitude between 0 and 1 inclusive.
 //    frequency - frequency in Hz.
 //    sampleRate - The sample rate in samples/second.
 //    duration - The duration in seconds.
@@ -29,6 +31,7 @@
 // This structure is used to consolidate user parameters.
 struct MyParameters
 {
+  float *amplitudePtr;
   float *frequencyPtr;
   float *sampleRatePtr;
   float *durationPtr;
@@ -67,6 +70,9 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Default parameters.
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+  // Default 1/2 scale.
+  *parameters.amplitudePtr = 0.5;
+
   // Default to 200Hz.
   *parameters.frequencyPtr = 200;
 
@@ -90,6 +96,12 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
 
     switch (opt)
     {
+      case 'a':
+      {
+        *parameters.amplitudePtr = atof(optarg);
+        break;
+      } // case
+
       case 'f':
       {
         *parameters.frequencyPtr = atof(optarg);
@@ -111,7 +123,8 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
       case 'h':
       {
         // Display usage.
-        fprintf(stderr,"./cosine -f frequency -r sampleRate -d duration\n");
+        fprintf(stderr,"./cosine -a amplitude -f frequency -r sampleRate"
+                " -d duration\n");
 
         // Indicate that program must be exited.
         exitProgram = true;
@@ -141,6 +154,7 @@ int main(int argc,char **argv)
   bool exitProgram;
   float iValue, qValue;
   int16_t cosineValue;
+  float amplitude;
   float frequency;
   float sampleRate;
   float duration;
@@ -149,6 +163,7 @@ int main(int argc,char **argv)
   struct MyParameters parameters;
 
   // Set up for parameter transmission.
+  parameters.amplitudePtr = &amplitude;
   parameters.frequencyPtr = &frequency;
   parameters.sampleRatePtr = &sampleRate;
   parameters.durationPtr = &duration;
@@ -174,7 +189,7 @@ int main(int argc,char **argv)
     myNcoPtr->run(&iValue,&qValue);
 
     // Convert to integer and scale.
-    cosineValue = (int16_t)(iValue * 32767);
+    cosineValue = (int16_t)(iValue * amplitude * 32767);
 
    // Write the samples to stdout
    fwrite(&cosineValue,sizeof(int16_t),1,stdout);
