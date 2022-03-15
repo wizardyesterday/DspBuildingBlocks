@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "Nco.h"
 
@@ -92,13 +93,14 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
   while (!done)
   {
     // Retrieve the next option.
-    opt = getopt(argc,argv,"f:r:d:h");
+    opt = getopt(argc,argv,"a:f:r:d:h");
 
     switch (opt)
     {
       case 'a':
       {
         *parameters.amplitudePtr = atof(optarg);
+        *parameters.amplitudePtr = fabs(*parameters.amplitudePtr);
         break;
       } // case
 
