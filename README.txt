@@ -37,7 +37,7 @@ different ways to do CTCSS decoding. I mentioned that I made a CTCSS
 detector, and since the other person had in interest in these items, I
 decided to put my CTCSS detector into this repository. You feed it PCM data
 (raw PCM samples), and it will print out the frequency of a PL tone.  It
-also echos the PCM data that it readfrom stdin and echos it to stdout.
+also echos the PCM data that it read from stdin and echos it to stdout.
 What use is this stdout thing? Well, if you got an SDR and it sends
 demodulated data (PCM) to stdout, you can pipe the output the my test CTCSS
 program (that instantiates my CtcssDetector class), followed by piping the
