@@ -135,7 +135,7 @@ bool getUserArguments(int argc,char **argv,struct MyParameters parameters)
       {
         // Display usage.
         fprintf(stderr,"./testNco -a amplitude-f frequency -r sampleRate "
-                " -d duration -b [8 | 16 | 0 (floating point)]\n");
+                " -d duration -n [8 | 16 | 0 (floating point)]\n");
 
         // Indicate that program must be exited.
         exitProgram = true;
