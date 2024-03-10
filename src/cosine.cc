@@ -188,7 +188,7 @@ int main(int argc,char **argv)
   for (i = 0; i < numberOfSamples; i++)
   {
     // Get the next sample pair.
-    myNcoPtr->run(&iValue,&qValue);
+    myNcoPtr->runFast(&iValue,&qValue);
 
     // Convert to integer and scale.
     cosineValue = (int16_t)(iValue * amplitude * 32767);

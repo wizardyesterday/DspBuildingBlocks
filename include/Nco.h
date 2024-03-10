@@ -25,6 +25,7 @@ class Nco
   void setFrequency(float frequency);
   void reset(void);
   void run(float *iValuePtr,float *qValuePtr);
+  void runFast(float *iValuePtr,float *qValuePtr);
 
   //***************************** attributes **************************
   private:
@@ -34,6 +35,10 @@ class Nco
 
   // The operating frequency of the NCO.
   float frequency;
+
+  // Sine and cosine lookup tables.
+  float Sin[16384];
+  float Cos[16384];
 
   PhaseAccumulator *phaseAccumulatorPtr;
 };
