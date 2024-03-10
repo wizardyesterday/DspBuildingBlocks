@@ -228,11 +228,8 @@ void Nco::runFast(float *iValuePtr,float *qValuePtr)
   phase = phaseAccumulatorPtr->run();
 
   // Map the phase to a table index.
-//  phaseTableIndex = (int16_t)(roundf(phase) * 16384 / (2 * M_PI));
   phaseTableIndex = (int16_t)(phase * 16384 / (2 * M_PI));
   phaseTableIndex += 8192;
-
-//printf("phase: %f  Index: %d\n",phase,phaseTableIndex);
 
   //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
   // Ensure that roundoff error doesn't take
